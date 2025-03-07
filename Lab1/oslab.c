@@ -84,7 +84,7 @@ int update_running_process(int process_index, int current_time) {
         if (process_list[process_index].remaining_cpu2 == 0) {
             process_list[process_index].state = READY;
             process_list[process_index].done = 1;
-            process_list[process_index].complete_time = current_time + 1;
+            process_list[process_index].complete_time = current_time;
             process_list[process_index].turnaround_time = 
                 process_list[process_index].complete_time - process_list[process_index].arrival_time;
             return 1;
