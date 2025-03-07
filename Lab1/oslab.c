@@ -66,21 +66,21 @@ int update_running_process(int, int); //This function updates the remaining time
 int update_running_process(int process_index, int current_time) {
     // Returns 1 if the process completed and 0 otherwise.
     
-    // Check if the process has remaining CPU1 time
+
     if (process_list[process_index].remaining_cpu1 > 0) {
         process_list[process_index].remaining_cpu1--;
         
-        // If CPU1 is now complete, prepare for I/O phase
         if (process_list[process_index].remaining_cpu1 == 0) {
             process_list[process_index].state = BLOCKED;
+            process_list[process_index].remaining_io++;
             return 0;
         }
     }
-    // Otherwise, check if the process has remaining CPU2 time
+
     else if (process_list[process_index].remaining_cpu2 > 0) {
         process_list[process_index].remaining_cpu2--;
         
-        // If CPU2 is now complete, process is done
+
         if (process_list[process_index].remaining_cpu2 == 0) {
             process_list[process_index].state = READY;
             process_list[process_index].done = 1;
@@ -94,9 +94,8 @@ int update_running_process(int process_index, int current_time) {
     return 0;
 }
 
-void update_blocked_processes(int); //decrement the io field in all blocked processes. 
+void update_blocked_processes(int); 
 void update_blocked_processes(int current_time) {
-    // Decrement the io field in all blocked processes.
     for (int i = 0; i < num_processes; i++) {
         if (process_list[i].state == BLOCKED && 
             process_list[i].done == 0 && 
@@ -104,7 +103,7 @@ void update_blocked_processes(int current_time) {
             
             process_list[i].remaining_io--;
             
-            // If I/O is complete, move to READY state for CPU2
+
             if (process_list[i].remaining_io == 0) {
                 process_list[i].state = READY;
             }
@@ -114,14 +113,11 @@ void update_blocked_processes(int current_time) {
 
 void print_processes(FILE *, int, int); //print blocked/ready processes into the output file> The other two inputs are the current time and the PID of the currently running process.
 void print_processes(FILE *output, int current_time, int running_process_index) {
-    // Print blocked/ready processes into the output file
     for (int i = 0; i < num_processes; i++) {
-        // Skip the running process and processes that haven't arrived yet
         if (i == running_process_index || process_list[i].arrival_time > current_time || process_list[i].done == 1) {
             continue;
         }
         
-        // Print the process status
         fprintf(output, "process : %d : %s\n", 
                 process_list[i].pid, 
                 states[process_list[i].state]);
@@ -176,7 +172,8 @@ time = 0;
 while(num_completed_processes < num_processes){
 	
 	//print the current time in the output file.
-	print_processes(output,time,running_process_index);
+    fprintf(output, "time:%d\n", time);
+	// print_processes(output,time,running_process_index);
 	//Find the process to be running right now.
 	running_process_index = scheduler(time);
 	/* If there is a process, (ie, scheduler does not return -1):  
