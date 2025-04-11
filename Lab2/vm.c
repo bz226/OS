@@ -14,6 +14,15 @@ typedef struct {
     unsigned int frameNumber;
 } PageTableEntry;
 
+int periodic(int num, int increment, PageTableEntry *pageTable, int virtualPageCount) {
+    if (increment == num) {
+        for (int j = 0; j < virtualPageCount; j++) {
+            pageTable[j].referenced = 0;
+        }
+        increment = 0;
+    }
+    return increment;
+}
 
 void initializeEntry(PageTableEntry *pageTable, int i) {
     pageTable[i].valid = 0;
@@ -22,15 +31,7 @@ void initializeEntry(PageTableEntry *pageTable, int i) {
     pageTable[i].frameNumber = -1;
 }
 
-/*
-   NRU replacement:
-   - We look at all physical frames, checking the pages in them.
-   - For each page, form a “class” by (2*R + M).
-   - Keep track of the page with the lowest class.
-   - If multiple have the same class, choose the one in the lowest physical frame index.
-   - After we have a victim, we replace it with the new VPN.
-   - Mark the old page’s entry invalid.
-*/
+
 void NRU(PageTableEntry *pageTable, int physicalPages, int *physicalMemory, int vpn) {
     int victimIndex = -1;
     int lowestClassFound = 4; 
@@ -52,15 +53,6 @@ void NRU(PageTableEntry *pageTable, int physicalPages, int *physicalMemory, int 
 }
 
 
-int periodic(int num, int increment, PageTableEntry *pageTable, int virtualPageCount) {
-    if (increment == num) {
-        for (int j = 0; j < virtualPageCount; j++) {
-            pageTable[j].referenced = 0;
-        }
-        increment = 0;
-    }
-    return increment;
-}
 
 
 void print_result(int readCount, int writeCount, double faultPercent,
@@ -94,7 +86,7 @@ int main(int argc, char *argv[]) {
     int offsetBits = (int)log2(pageSize);
 
     int num = atoi(argv[3]);
-    
+
     int virtualPageCount = (1 << VIRTUAL_ADDRESS) / pageSize;
     int physicalPageCount = (1 << PHYSICAL_ADDRESS) / pageSize;
 
@@ -134,40 +126,33 @@ int main(int argc, char *argv[]) {
         physicalMemory[i] = -1;
     }
 
-    int incr = 0;     // increments each memory access
-    int faults = 0;   // how many page faults happened
+    int incr = 0;     
+    int faults = 0;   
 
-    // Process each memory access
     for (int i = 0; i < count; i++) {
         int vpn = all_vpn[i];
-        int operation = all_op[i];  // 0 = read, 1 = write
+        int operation = all_op[i];  
 
-        // If already in memory
         if (pageTable[vpn].valid) {
-            // Set R=1
             pageTable[vpn].referenced = 1;
-            // If write, set M=1
             if (operation == 1) {
                 pageTable[vpn].modified = 1;
             }
         } else {
-            // Page fault
             faults++;
-            // Find empty slot if any
             int foundEmpty = 0;
             for (int j = 0; j < physicalPageCount; j++) {
                 if (physicalMemory[j] == -1) {
-                    // Fill it
                     physicalMemory[j] = vpn;
                     foundEmpty = 1;
                     break;
                 }
             }
-            // If none found, do NRU
+
             if (!foundEmpty) {
                 NRU(pageTable, physicalPageCount, physicalMemory, vpn);
             }
-            // Mark this page valid
+
             pageTable[vpn].valid = 1;
             pageTable[vpn].referenced = 1;
             if (operation == 1) {
@@ -176,21 +161,11 @@ int main(int argc, char *argv[]) {
         }
 
         incr++;
-        // Possibly reset R bits after “num” accesses
         incr = periodic(num, incr, pageTable, virtualPageCount);
     }
 
-    // Calculate the fraction of accesses that caused page faults
     double faultPercent = (double)faults / count;
 
-    // Print final stats
     print_result(readCount, writeCount, faultPercent, physicalPageCount, physicalMemory);
-
-    // // Cleanup
-    // free(all_vpn);
-    // free(all_op);
-    // free(pageTable);
-    // free(physicalMemory);
-
     return 0;
 }
