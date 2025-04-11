@@ -65,8 +65,8 @@ int periodic(int num, int increment, PageTableEntry *pageTable, int virtualPageC
 
 void print_result(int readCount, int writeCount, double faultPercent,
                   int physicalPages, int *physicalMemory) {
-    printf("readcounts =%d\n", readCount);
-    printf("writecounts =%d\n", writeCount);
+    printf("num reads =%d\n", readCount);
+    printf("num writes =%d\n", writeCount);
     printf("percentage of page faults %.2f\n", faultPercent);
 
     for (int i = 0; i < physicalPages; i++) {
@@ -94,9 +94,9 @@ int main(int argc, char *argv[]) {
     int offsetBits = (int)log2(pageSize);
 
     int num = atoi(argv[3]);
-
-    int virtualPageCount = 16;
-    int physicalPageCount = 10;
+    
+    int virtualPageCount = (1 << VIRTUAL_ADDRESS) / pageSize;
+    int physicalPageCount = (1 << PHYSICAL_ADDRESS) / pageSize;
 
     int *all_vpn = NULL;
     int *all_op = NULL;  
@@ -105,8 +105,8 @@ int main(int argc, char *argv[]) {
     int readCount = 0;
     int writeCount = 0;
 
-    int address;
-    int op;
+    int address = 0;
+    int op=0;
 
     while (fscanf(fp, "%x %d", &address, &op) == 2) {
         all_vpn = realloc(all_vpn, sizeof(int) * (count + 1));
