@@ -1,0 +1,10 @@
+time:0
+process : 10 : running
+time:1
+process : 10 : running
+time:2
+time:3
+time:4
+process : 20 : running
+time:5
+process : 20 : running
