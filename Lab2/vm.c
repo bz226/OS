@@ -11,24 +11,12 @@ typedef struct {
     unsigned int valid;
     unsigned int referenced;
     unsigned int modified;
-    unsigned int frameNumber;
 } PageTableEntry;
-
-int periodic(int num, int increment, PageTableEntry *pageTable, int virtualPageCount) {
-    if (increment == num) {
-        for (int j = 0; j < virtualPageCount; j++) {
-            pageTable[j].referenced = 0;
-        }
-        increment = 0;
-    }
-    return increment;
-}
 
 void initializeEntry(PageTableEntry *pageTable, int i) {
     pageTable[i].valid = 0;
     pageTable[i].referenced = 0;
     pageTable[i].modified = 0;
-    pageTable[i].frameNumber = -1;
 }
 
 
@@ -52,13 +40,6 @@ void NRU(PageTableEntry *pageTable, int physicalPages, int *physicalMemory, int 
     initializeEntry(pageTable, victimVPN);
 }
 
-
-
-
-void print_result(int readCount, int writeCount, double faultPercent,
-                  int physicalPages, int *physicalMemory) {
-
-}
 
 int main(int argc, char *argv[]) {
     if (argc < 4) {
@@ -123,12 +104,7 @@ int main(int argc, char *argv[]) {
         int vpn = all_vpn[i];
         int operation = all_op[i];  
 
-        if (pageTable[vpn].valid) {
-            pageTable[vpn].referenced = 1;
-            if (operation == 1) {
-                pageTable[vpn].modified = 1;
-            }
-        } else {
+        if (!pageTable[vpn].valid) {
             faults++;
             int foundEmpty = 0;
             for (int j = 0; j < physicalPageCount; j++) {
@@ -148,10 +124,21 @@ int main(int argc, char *argv[]) {
             if (operation == 1) {
                 pageTable[vpn].modified = 1;
             }
+        } else {
+            pageTable[vpn].referenced = 1;
+            if (operation == 1) {
+                pageTable[vpn].modified = 1;
+            }
         }
 
         incr++;
-        incr = periodic(num, incr, pageTable, virtualPageCount);
+
+        if (incr == num) {
+            for (int j = 0; j < virtualPageCount; j++) {
+                pageTable[j].referenced = 0;
+            }
+            incr = 0;
+        }
     }
 
     double faultPercent = (double)faults / count;
