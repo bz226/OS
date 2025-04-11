@@ -57,17 +57,7 @@ void NRU(PageTableEntry *pageTable, int physicalPages, int *physicalMemory, int 
 
 void print_result(int readCount, int writeCount, double faultPercent,
                   int physicalPages, int *physicalMemory) {
-    printf("num reads =%d\n", readCount);
-    printf("num writes =%d\n", writeCount);
-    printf("percentage of page faults %.2f\n", faultPercent);
 
-    for (int i = 0; i < physicalPages; i++) {
-        if (physicalMemory[i] != -1) {
-            printf("mem[%d]:%x\n", i, physicalMemory[i]);
-        } else {
-            printf("mem[%d]:ffffffff\n", i);
-        }
-    }
 }
 
 int main(int argc, char *argv[]) {
@@ -166,6 +156,16 @@ int main(int argc, char *argv[]) {
 
     double faultPercent = (double)faults / count;
 
-    print_result(readCount, writeCount, faultPercent, physicalPageCount, physicalMemory);
+    printf("num reads =%d\n", readCount);
+    printf("num writes =%d\n", writeCount);
+    printf("percentage of page faults %.2f\n", faultPercent);
+
+    for (int i = 0; i < physicalPageCount; i++) {
+        if (physicalMemory[i] != -1) {
+            printf("mem[%d]:%x\n", i, physicalMemory[i]);
+        } else {
+            printf("mem[%d]:ffffffff\n", i);
+        }
+    }
     return 0;
 }
