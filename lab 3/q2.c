@@ -9,10 +9,11 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 void* worker(void* arg) {
     int i;
    
-    for(i = 0; i < LOOP; i++)
+    for(i = 0; i < LOOP; i++){
         Mutex_lock(&mutex);
     	balance++; 
         Mutex_unlock(&mutex);
+    }
     return NULL;
 }
 
