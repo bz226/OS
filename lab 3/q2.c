@@ -23,11 +23,12 @@ int main(int argc, char *argv[]) {
     Pthread_create(&p, NULL, worker, NULL);
     Pthread_create(&q, NULL, worker, NULL);
 	
-    for(i = 0; i < LOOP; i++)
+    for(i = 0; i < LOOP; i++){
         Mutex_lock(&mutex);
-        	balance++;
+        balance++;
         Mutex_unlock(&mutex);
-    
+    }
+
     Pthread_join(p, NULL);
 	Pthread_join(q, NULL);
     
