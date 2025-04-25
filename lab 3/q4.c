@@ -21,12 +21,10 @@ void* worker(void* arg) {
 int main(int argc, char *argv[]) {
     pthread_t p;
     Pthread_create(&p, NULL, worker, NULL);
-    while (jobdone == FALSE) {
-        Mutex_lock(&mutex);
-        while (jobdone == FALSE)
-            Cond_wait(&cond, &mutex);
-        Mutex_unlock(&mutex);
-    }
+    Mutex_lock(&mutex);
+    while (jobdone == FALSE)
+        Cond_wait(&cond, &mutex);
+    Mutex_unlock(&mutex);
     printf("Last\n");
     return 0;
 }
